@@ -1,0 +1,66 @@
+---
+- name
+  hosts:
+  become: yes
+  gather_facts: no
+  vars:
+    some_variable: <some-value-of-the-variable>
+    some_dictionary:
+      dictionary_key: some_key
+#   Handlers: (the list of handlers that are executed as a notify key from a task)
+#   Roles: (list of roles to be imported into the play)
+
+
+  tasks:
+
+# task to end the playbook execution for certain host if a condition is not met based on facts in aap
+  - name: Don't run for <azure>
+    meta: end_host
+    when: ansible_facts['mstr_cloud_provider'] == 'Azure'
+
+
+#####################################
+# Shell task and registering variable
+  - name: Run command <command>
+    shell: <command>
+    register: <name>
+
+
+###########################
+# Handlers + debug messages
+
+  - name: some play
+  copy:
+    content: "{{some variable}}"
+    dest: /path/to/file.ext
+  notify: sample-copy-handler #this triggers the Handler "sample-copy-handler" to do what it does the end of the tasks if this task executed
+
+  - name: sample-copy-handler
+    debug:
+      msg: I copied some stuff
+
+
+################
+# Block of tasks
+  - name: Name of the block
+    block:
+  
+    - name: some task
+      shell: or something
+    - name: some task2
+      replace:
+        path: "{{ some_variable }}/path/path/file.ext"
+        regexp: 'some-string-to-be-replaced'
+        replace: 'new-string-to-replace-with'
+
+    when: <some_condition which applies to entire block> #(for example ansible_facts[mstr_mcp_console_info"]["environmentType"] == 'Enterprise')
+
+
+#############################
+# 2 ways of calling variables that are doctionaries
+  - name: 3 ways of calling a complex variable
+    debug:
+      msg: 
+        - "{{some dictionary}}"
+        - "{{some_dictionary.dict_key}}"
+...     - "{{some_dictionary['dict_key']}}"
